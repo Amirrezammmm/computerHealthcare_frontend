@@ -1,69 +1,80 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import ComputerCard, { Computer } from '@/components/ComputerCard';
+import { Search, ShieldAlert, RefreshCw } from 'lucide-react';
+
+export default function Dashboard() {
+  const [computers, setComputers] = useState<Computer[]>([]);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const fetchComputers = async (query = '') => {
+    setLoading(true);
+    try {
+      // آدرس API لاراول (پورت 8000 به صورت پیش‌فرض)
+      const res = await fetch(`http://localhost:8000/api/computers?search=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      setComputers(data.data || []);
+    } catch (err) {
+      console.error('اتصال به مرکز فرماندهی القارعه قطع شد:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchComputers(search);
+    }, 400); // به سبک بریکرِ حرفه‌ای، Debounce می‌زنیم تا سرور لاراول التماس نکنه!
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [search]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <main className="min-h-screen bg-slate-950 text-slate-100 p-8">
+      <header className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between pb-8 border-b border-slate-800 gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-3 text-red-500">
+            <ShieldAlert className="w-8 h-8 animate-pulse" />
+            سامانه مانیتورینگ سلامت القارعه
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-slate-400 text-sm mt-1">
+            سیستم کنترل و ردیابی وضعیت فیزیکی و نرم‌افزاری کیس‌های تحت شبکه
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* جعبه جستجوی کد اموال */}
+        <div className="relative w-full md:w-96">
+          <Search className="absolute right-3.5 top-3 w-5 h-5 text-slate-500" />
+          <input
+            type="text"
+            placeholder="جستجوی کد اموال یا برچسب..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-slate-900 border border-slate-800 rounded-xl pr-11 pl-4 py-2.5 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all placeholder:text-slate-500"
+          />
         </div>
-      </main>
-    </div>
+      </header>
+
+      {/* شبکه نمایش سیستم‌ها */}
+      <section className="max-w-7xl mx-auto mt-8">
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <RefreshCw className="w-8 h-8 animate-spin text-red-500" />
+          </div>
+        ) : computers.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {computers.map((comp) => (
+              <ComputerCard key={comp.id} computer={comp} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20 text-slate-500 border border-dashed border-slate-800 rounded-2xl">
+            هیچ کیسی با مشخصات وارد شده در زاغه مهمات پیدا نشد!
+          </div>
+        )}
+      </section>
+    </main>
   );
 }
