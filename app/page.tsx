@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import ComputerCard, { Computer } from '@/components/ComputerCard';
 import { Search, ShieldAlert, RefreshCw } from 'lucide-react';
+import AdminButton from '@/components/AdminButton';
 
 export default function Dashboard() {
   const [computers, setComputers] = useState<Computer[]>([]);
@@ -55,6 +56,8 @@ export default function Dashboard() {
             className="w-full bg-slate-900 border border-slate-800 rounded-xl pr-11 pl-4 py-2.5 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all placeholder:text-slate-500"
           />
         </div>
+              {/* دکمه ورود به ادمین */}
+      <AdminButton />
       </header>
 
       {/* شبکه نمایش سیستم‌ها */}

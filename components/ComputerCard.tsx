@@ -1,9 +1,13 @@
+'use client';
+
 import React from 'react';
 import { ShieldCheck, AlertTriangle, Flame, Calendar, Tag, Lock } from 'lucide-react';
 
 export interface Computer {
   id: number;
   property_code: string;
+  item_title?: string | null;
+  user_name?: string | null;
   primary_seal_code: string | null;
   secondary_seal_code: string | null;
   label_code: string | null;
@@ -12,6 +16,7 @@ export interface Computer {
   health_status: 'healthy' | 'warning' | 'critical';
   description: string | null;
 }
+
 
 const statusConfig = {
   healthy: {
